@@ -1,0 +1,5 @@
+start
+>> npm init -y
+>> mkdir config controller middleware model routes 
+>> touch index.js
+>> npm i express mongoose bcrypt body-parser dotenv
