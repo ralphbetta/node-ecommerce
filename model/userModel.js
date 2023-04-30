@@ -1,4 +1,4 @@
-//mdbgum -short cut
+//!mdbgum -short cut
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
