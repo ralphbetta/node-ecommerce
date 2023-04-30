@@ -13,7 +13,7 @@ dbConnect();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use('/api/user', authRouther);
+app.use('/api/auth', authRouther);
 
 // app.use(notFound);
 // app.use(errorHandler);
