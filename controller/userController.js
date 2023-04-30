@@ -106,6 +106,36 @@ const loginUser = async (req, res) => {
        return res.status(404).send('User not found');
     });
   };
+  
+
+
+  const blockUser = (req, res) => {
+    const id = req.params.id;
+    User.findByIdAndUpdate(id, {isBlocked: true}, {new:true}).then((user)=>{
+     if(user){
+        return res.json({data:user, success: true});
+     }else{
+        return res.json({data:user, success: false});
+     } 
+    }).catch((err)=>{
+        console.error(err);
+       return res.status(404).send('User not found');
+    });
+  };
+
+  const unblockUser = (req, res) => {
+    const id = req.params.id;
+    User.findByIdAndUpdate(id, {isBlocked: false}, {new:true}).then((user)=>{
+     if(user){
+        return res.json({data:user, success: true});
+     }else{
+        return res.json({data:user, success: false});
+     }
+    }).catch((err)=>{
+        console.error(err);
+       return res.status(404).send('User not found');
+    });
+  };
 
 
 
@@ -149,4 +179,4 @@ const loginUser = async (req, res) => {
     });
   };
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, getProfile, deleteProfile, updateProfile};
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile};
