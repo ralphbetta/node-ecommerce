@@ -219,4 +219,33 @@ const updateProfile = (req, res) => {
     });
 };
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken };
+
+const logout =(req, res)=>{
+    const cookies = req.cookies;
+    
+    if(cookies.refreshToken){
+        const refreshedToken = cookies.refreshToken;
+        User.findOneAndUpdate(refreshedToken, {refreshToken:""}).then((user)=>{
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+            });
+
+            return res.status(204).json(
+               {message: "No user with this refresh token",
+                data: user
+            });
+       
+        }).catch((err)=>{
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+            });
+            res.status(204).json("No user with this refresh token");
+        });
+    }else{
+        throw new Error("No refresh token in cookies");
+    }
+} 
+
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken, logout };
