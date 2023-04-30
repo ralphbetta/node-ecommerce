@@ -36,7 +36,7 @@ const loginUser = async (req, res) => {
 
         if (user) {
         bcrypt.compare(req.body.password, user.password).then((match) => {
-            const userData = { email: user.email, name: user.name, _id: user._id };
+            const userData = { email: user.email, name: user.name, id: user._id, role: user.role };
             if (match) {
                 return res.status(200).json({sucess: true, data: user, token:generateToken(userData) });
             } else {
