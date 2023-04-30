@@ -1,4 +1,5 @@
 const { generateToken } = require('../middleware/jwtToken');
+const validateMongoDbId = require('../utils/validateMongoDBId');
 const User = require('./../model/userModel');
 // const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt');
@@ -125,6 +126,7 @@ const loginUser = async (req, res) => {
 
   const unblockUser = (req, res) => {
     const id = req.params.id;
+    validateMongoDbId(id);
     User.findByIdAndUpdate(id, {isBlocked: false}, {new:true}).then((user)=>{
      if(user){
         return res.json({data:user, success: true});
