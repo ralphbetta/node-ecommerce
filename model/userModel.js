@@ -31,7 +31,17 @@ var userSchema = new mongoose.Schema({
     role:{
         type:String,
         default: "user"
-    }
+    },
+    cart:{
+        type: Array,
+        default: []
+    },
+    address:{type: mongoose.Schema.Types.ObjectId, ref: "Address"},
+    wishList:{type: mongoose.Schema.Types.ObjectId, ref: "Product "},
+    date: {
+        type: Date,
+        default: Date.now,
+      },
 });
 
 
@@ -45,9 +55,6 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods.isPasswordMatched = async (enteredPassword) => {
 
-    console.log(enteredPassword);
-    console.log(this.password);
-    
     // return await bcrypt.compare(enteredPassword, this.password);
 }
 
