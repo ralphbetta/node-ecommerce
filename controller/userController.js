@@ -1,7 +1,11 @@
 const { generateToken } = require('../middleware/jwtToken');
+const generateRefreshToken = require('../middleware/refreshTokken');
+const validateMongoDbId = require('../utils/validateMongoDBId');
 const User = require('./../model/userModel');
 // const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 
 const createUser = async (req, res) => {
     const email = req.body.email;
@@ -34,13 +38,22 @@ const loginUser = async (req, res) => {
     User.findOne({ email: email }).then((user) => {
 
         if (user) {
-        bcrypt.compare(req.body.password, user.password).then((match) => {
-            const userData = { email: user.email, name: user.name, id: user._id, role: user.role };
-            if (match) {
-                return res.status(200).json({sucess: true, data: user, token:generateToken(userData) });
-            } else {
-                return res.status(401).json({ "message": "Authentication failed. Invalid user or password." })
-            }
+            bcrypt.compare(req.body.password, user.password).then((match) => {
+                const userData = { email: user.email, name: user.name, id: user._id, role: user.role };
+                if (match) {
+
+                    //---------- For Refresh Token---------------------
+                    const refreshedToken = generateRefreshToken(userData);
+                    User.findByIdAndUpdate(user._id, { refreshToken: refreshedToken }, { new: true }).then((updates) => { });
+                    res.cookie("refreshToken", refreshedToken, {
+                        httpOnly: true,
+                        maxAge: 72 * 60 * 60 * 1000,
+                    })
+                    //--------------------------------------------------
+                    return res.status(200).json({ sucess: true, data: user, token: generateToken(userData) });
+                } else {
+                    return res.status(401).json({ "message": "Authentication failed. Invalid user or password." })
+                }
 
             });
         } else {
@@ -53,100 +66,157 @@ const loginUser = async (req, res) => {
     }).catch((error) => {
         res.json({ message: 'Server error' })
     })
+    
 }
 
 
- const getAllUsers = (req, res) => {
-    User.find().then((users)=>{
-      res.send(users);
-    }).catch((err)=>{
+const handleRefreshToken = async (req, res) => {
+    const cookies = req.cookies;
+    if(cookies.refreshToken){
+        const refreshedToken = cookies.refreshToken;
+        User.findOne({refreshToken: refreshedToken}).then((user)=>{
+            const userData = { email: user.email, name: user.name, id: user._id, role: user.role };
+            jwt.verify(refreshedToken, process.env.JWT_SECRETE, (err, decoded)=>{
+                if(err || user._id.toString() !== decoded.userdata.id){
+                console.log(decoded);
+                console.log(userData.id);
+                  res.status(404).json("There's something wrong with the refresh token");
+                }else{
+                    const accessToken = generateToken(userData);
+                    res.status(200).json({accessToken});
+                }
+            });
+        }).catch((err)=>{
+            res.status(404).json("No user with this refresh token");
+        });
+    }else{
+        throw new Error("No refresh token in cookies");
+    }
+}
+
+
+const getAllUsers = (req, res) => {
+    User.find().then((users) => {
+        res.send(users);
+    }).catch((err) => {
         console.error(err);
         res.status(500).send(err);
     });
-  };
+};
 
 
-  const getUser =(req, res)=>{
+const getUser = (req, res) => {
     const id = req.params.id;
 
-    User.findById(id).then((user)=>{
-        if(user){
-            return res.json({data:user, success: true});
-         }else{
-            return res.json({data:user, success: false});
-         }
-    }).catch((error)=>{
-        res.status(405).send({message:"User not found"});
+    User.findById(id).then((user) => {
+        if (user) {
+            return res.json({ data: user, success: true });
+        } else {
+            return res.json({ data: user, success: false });
+        }
+    }).catch((error) => {
+        res.status(405).send({ message: "User not found" });
         console.log(error);
     })
-  }
+}
 
 
-  const deleteUser =(req, res)=>{
+const deleteUser = (req, res) => {
     const id = req.params.id;
 
-    User.findByIdAndDelete(id).then((user)=>{
-        res.status(200).send({data:user, message:"deleted"});
-    }).catch((error)=>{
-        res.status(405).send({message:"unable to delete user"});
+    User.findByIdAndDelete(id).then((user) => {
+        res.status(200).send({ data: user, message: "deleted" });
+    }).catch((error) => {
+        res.status(405).send({ message: "unable to delete user" });
         console.log(error);
     })
-  }
+}
 
-  const updateUser = (req, res) => {
+const updateUser = (req, res) => {
     const id = req.params.id;
-    User.findByIdAndUpdate(id, req.body, {new:true}).then((user)=>{
-     if(user){
-        return res.json({data:user, success: true});
-     }else{
-        return res.json({data:user, success: false});
-     }
-    }).catch((err)=>{
+    User.findByIdAndUpdate(id, req.body, { new: true }).then((user) => {
+        if (user) {
+            return res.json({ data: user, success: true });
+        } else {
+            return res.json({ data: user, success: false });
+        }
+    }).catch((err) => {
         console.error(err);
-       return res.status(404).send('User not found');
+        return res.status(404).send('User not found');
     });
-  };
+};
 
 
 
-  const getProfile =(req, res)=>{
-    const id = req.userData.id;
-    User.findById(id).then((user)=>{
-        if(user){
-            return res.json({data:user, success: true});
-         }else{
-            return res.json({data:user, success: false});
-         }
-    }).catch((error)=>{
-        res.status(405).send({message:"User not found"});
-        console.log(error);
-    })
-  }
-
-
-  const deleteProfile =(req, res)=>{
-    const id = req.userData.id;
-
-    User.findByIdAndDelete(id).then((user)=>{
-        res.status(200).send({data:user, message:"deleted"});
-    }).catch((error)=>{
-        res.status(405).send({message:"unable to delete user"});
-        console.log(error);
-    })
-  }
-
-  const updateProfile = (req, res) => {
-    const id = req.userData.id;
-    User.findByIdAndUpdate(id, req.body, {new:true}).then((user)=>{
-     if(user){
-        return res.json({data:user, success: true});
-     }else{
-        return res.json({data:user, success: false});
-     }
-    }).catch((err)=>{
+const blockUser = (req, res) => {
+    const id = req.params.id;
+    User.findByIdAndUpdate(id, { isBlocked: true }, { new: true }).then((user) => {
+        if (user) {
+            return res.json({ data: user, success: true });
+        } else {
+            return res.json({ data: user, success: false });
+        }
+    }).catch((err) => {
         console.error(err);
-       return res.status(404).send('User not found');
+        return res.status(404).send('User not found');
     });
-  };
+};
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, getProfile, deleteProfile, updateProfile};
+const unblockUser = (req, res) => {
+    const id = req.params.id;
+    validateMongoDbId(id);
+    User.findByIdAndUpdate(id, { isBlocked: false }, { new: true }).then((user) => {
+        if (user) {
+            return res.json({ data: user, success: true });
+        } else {
+            return res.json({ data: user, success: false });
+        }
+    }).catch((err) => {
+        console.error(err);
+        return res.status(404).send('User not found');
+    });
+};
+
+
+
+const getProfile = (req, res) => {
+    const id = req.userData.id;
+    User.findById(id).then((user) => {
+        if (user) {
+            return res.json({ data: user, success: true });
+        } else {
+            return res.json({ data: user, success: false });
+        }
+    }).catch((error) => {
+        res.status(405).send({ message: "User not found" });
+        console.log(error);
+    })
+}
+
+
+const deleteProfile = (req, res) => {
+    const id = req.userData.id;
+
+    User.findByIdAndDelete(id).then((user) => {
+        res.status(200).send({ data: user, message: "deleted" });
+    }).catch((error) => {
+        res.status(405).send({ message: "unable to delete user" });
+        console.log(error);
+    })
+}
+
+const updateProfile = (req, res) => {
+    const id = req.userData.id;
+    User.findByIdAndUpdate(id, req.body, { new: true }).then((user) => {
+        if (user) {
+            return res.json({ data: user, success: true });
+        } else {
+            return res.json({ data: user, success: false });
+        }
+    }).catch((err) => {
+        console.error(err);
+        return res.status(404).send('User not found');
+    });
+};
+
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken };
