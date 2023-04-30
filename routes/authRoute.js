@@ -1,12 +1,14 @@
 const express = require('express');
-const { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, getProfile, deleteProfile, updateProfile, blockUser, unblockUser } = require('../controller/userController');
+const { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, getProfile, deleteProfile, updateProfile, blockUser, unblockUser, handleRefreshToken } = require('../controller/userController');
 const { verifyToken, isAdmin } = require('../middleware/jwtToken');
 
 router = express.Router();
 
 
+router.get('/refreshtoken', handleRefreshToken);
 router.post('/register', createUser);
 router.post('/login', loginUser);
+
 router.get('/users', verifyToken, isAdmin, getAllUsers);
 router.get('/user/:id', getUser);
 router.delete('/delete/:id', deleteUser);
