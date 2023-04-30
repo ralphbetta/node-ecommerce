@@ -32,18 +32,17 @@ const isAdmin = async (req, res, next)=>{
     const id = req.userData.id;
     
     const user = User.findById(id).then((user) => {
+        console.log(user.role);
+
         if(user){
             if(user.role !== 'admin'){
-                throw new Error("You are not an admin");
+                return res.status(401).json({ message: 'You have no admin rights' });
             }else{
                 next();
             }
         }else{
-            console.log("user does not exist");
-            throw new Error("You are not an admin");
+            throw new Error("User does not exist");
         }
-    }).catch((err) => {
-        return res.status(401).json({ message: 'error occured' });
     });
 }
 
