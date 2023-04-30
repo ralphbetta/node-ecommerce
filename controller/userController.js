@@ -1,4 +1,3 @@
-
 const { generateToken } = require('../middleware/jwtToken');
 const User = require('./../model/userModel');
 // const asyncHandler = require('express-async-handler')
@@ -108,4 +107,46 @@ const loginUser = async (req, res) => {
     });
   };
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser };
+
+
+  const getProfile =(req, res)=>{
+    const id = req.userData.id;
+    User.findById(id).then((user)=>{
+        if(user){
+            return res.json({data:user, success: true});
+         }else{
+            return res.json({data:user, success: false});
+         }
+    }).catch((error)=>{
+        res.status(405).send({message:"User not found"});
+        console.log(error);
+    })
+  }
+
+
+  const deleteProfile =(req, res)=>{
+    const id = req.userData.id;
+
+    User.findByIdAndDelete(id).then((user)=>{
+        res.status(200).send({data:user, message:"deleted"});
+    }).catch((error)=>{
+        res.status(405).send({message:"unable to delete user"});
+        console.log(error);
+    })
+  }
+
+  const updateProfile = (req, res) => {
+    const id = req.userData.id;
+    User.findByIdAndUpdate(id, req.body, {new:true}).then((user)=>{
+     if(user){
+        return res.json({data:user, success: true});
+     }else{
+        return res.json({data:user, success: false});
+     }
+    }).catch((err)=>{
+        console.error(err);
+       return res.status(404).send('User not found');
+    });
+  };
+
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, getProfile, deleteProfile, updateProfile};
