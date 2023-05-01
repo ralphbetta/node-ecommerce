@@ -28,26 +28,29 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    role:{
-        type:String,
+    role: {
+        type: String,
         default: "user"
     },
-    cart:{
+    cart: {
         type: Array,
         default: []
     },
-    isBlocked:{
+    isBlocked: {
         type: Boolean,
         default: false,
     },
-    address:{type: mongoose.Schema.Types.ObjectId, ref: "Address"},
-    wishList:{type: mongoose.Schema.Types.ObjectId, ref: "Product "},
-    refreshToken: {type: String},
+    address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
+    wishList: { type: mongoose.Schema.Types.ObjectId, ref: "Product " },
+    refreshToken: { type: String },
     date: {
         type: Date,
         default: Date.now,
-      },
-});
+    },
+},
+
+    { timestamps: true }
+);
 
 
 // Hash the password before saving the user
