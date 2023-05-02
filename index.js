@@ -11,8 +11,8 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 const cokieParser = require('cookie-parser');
 const morgan = require('morgan');
 
-// dbConnectLive();
-dbConnect();
+dbConnectLive();
+// dbConnect();
 
 
 app.use(bodyParser.json());

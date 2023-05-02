@@ -21,19 +21,23 @@ var productSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    // category: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Category",
+    // },
     category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
+        type: String,
+        required: true,
     },
     brand: {
         type: String,
-        enum: ["Apple", "Samsung", "Lenovo"],
+        enum: ["Apple", "Samsung", "Lenovo", "Tecno", "LG"],
     },
     quantity: Number,
     sold: {
         type: Number,
         default: 0,
-        select:false, //hide this from fetch
+        select: false, //hide this from fetch
     },
     images: {
         type: Array,
@@ -54,7 +58,7 @@ var productSchema = new mongoose.Schema({
     ],
 },
 
-{timestamps: true}
+    { timestamps: true }
 
 );
 
