@@ -9,6 +9,7 @@ const productRouther = require('./routes/productRoute');
 const bodyParser = require('body-parser');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const cokieParser = require('cookie-parser');
+const morgan = require('morgan');
 
 // dbConnectLive();
 dbConnect();
@@ -16,7 +17,7 @@ dbConnect();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
+app.use(morgan('dev'));
 
 //---------- For Refresh Token [b4 the route] -------
 app.use(cokieParser());
