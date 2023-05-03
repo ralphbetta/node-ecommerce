@@ -43,18 +43,19 @@ const getProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
     const id = req.params.id;
 
-    Product.findByIdAndDelete(id).then((response)=>{
-        if(response){
+    Product.findByIdAndDelete(id).then((response) => {
+        if (response) {
             return res.status(200).json({ message: "deleted successfuly", data: response });
-        }else{
-            return res.status(401).json({ message: "Item not found", data: {}});
+        } else {
+            return res.status(401).json({ message: "Item not found", data: {} });
         }
-    }).catch((error)=>{
+    }).catch((error) => {
         return res.status(500).json({ message: "Server Error", data: {} });
     });
 }
 
 const getAllProduct = (req, res) => {
+
     Product.find().then((products) => {
         return res.status(200).json({ message: "sucessful", data: products });
     }).catch((error) => {
@@ -62,5 +63,65 @@ const getAllProduct = (req, res) => {
     });
 }
 
+const filterAllProduct = (req, res) => {
 
-module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct };
+
+    // Filtering
+    const excludeFields = ["page", "sort", "limit", "fields", "itemsPerPage"];
+    const queryObj = { ...req.query };
+    excludeFields.forEach((item) => delete queryObj[item]);
+
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(get|gt|lte|lt)\b/g, (match) => `$$(match)`);
+
+
+    Product.find(JSON.parse(queryStr)).then((query) => {
+
+        // Filter by data - not tested
+        if (req.query.startDate && req.query.endDate) {
+            console.log(req.query.startDate);
+            console.log(req.query.endDate);
+            query = query.filter(obj => obj.updatedAt >= req.query.startDate && obj.updatedAt <= req.query.endDate);
+        }
+
+        // Sorting
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(",").join(" ");
+            query.sort((a, b) => a.sortBy - b.sortBy);
+        } else {
+            query.sort((a, b) => a.createdAt - b.createdAt);
+        }
+
+        // Fields
+        if (req.query.fields) {
+            query = query.map(({ title, price, slug, updatedAt }) => ({ title, price, slug, updatedAt }));
+        }
+
+
+        //pagination
+        if (req.query.page) {
+
+            const page = req.query.page; // Current page number
+            const itemsPerPage = req.query.itemsPerPage; // Number of items per page
+            const startIndex = (page - 1) * itemsPerPage;
+
+            // Applying Limit
+            if (req.query.limit) {
+                const limit = req.query.limit;
+                const endIndex = Math.min(startIndex + itemsPerPage, limit);
+                query = query.slice(startIndex, endIndex);
+            }
+
+            const endIndex = startIndex + itemsPerPage;
+            query = query.slice(startIndex, endIndex);
+        }
+
+
+        return res.status(200).json({ message: "sucessful", data: query });
+
+    });
+
+}
+
+
+module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct };
