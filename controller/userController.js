@@ -230,7 +230,7 @@ const changePassword = (req, res) => {
             user.save().then((response)=>{
                 console.log(response);
             });
-            return res.status(401).json({ data: "password changed unsucesfully", success: true, data: user});
+            return res.status(401).json({ data: "password changed unsucesfully", success: true});
         });
 
     }).catch((err) => {
