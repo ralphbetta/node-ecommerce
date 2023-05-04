@@ -69,7 +69,6 @@ const loginUser = async (req, res) => {
     
 }
 
-
 const handleRefreshToken = async (req, res) => {
     const cookies = req.cookies;
     if(cookies.refreshToken){
@@ -207,6 +206,7 @@ const deleteProfile = (req, res) => {
 
 const updateProfile = (req, res) => {
     const id = req.userData.id;
+    console.log(req.body);
     User.findByIdAndUpdate(id, req.body, { new: true }).then((user) => {
         if (user) {
             return res.json({ data: user, success: true });
@@ -219,4 +219,53 @@ const updateProfile = (req, res) => {
     });
 };
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken };
+
+const changePassword = (req, res) => {
+    const id = req.userData.id;
+    validateMongoDbId(id);
+    User.findById(id).then((user)=>{
+
+        user.createPasswordResetToken().then((token)=>{
+            user.password = req.body.password;
+            user.save().then((response)=>{
+                console.log(response);
+            });
+            return res.status(401).json({ data: "password changed unsucesfully", success: true});
+        });
+
+    }).catch((err) => {
+        console.error(err);
+        return res.status(500).send('Server error');
+    });
+};
+
+
+const logout =(req, res)=>{
+    const cookies = req.cookies;
+    
+    if(cookies.refreshToken){
+        const refreshedToken = cookies.refreshToken;
+        User.findOneAndUpdate(refreshedToken, {refreshToken:""}).then((user)=>{
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+            });
+
+            return res.status(204).json(
+               {message: "No user with this refresh token",
+                data: user
+            });
+       
+        }).catch((err)=>{
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+            });
+            res.status(204).json("No user with this refresh token");
+        });
+    }else{
+        throw new Error("No refresh token in cookies");
+    }
+} 
+
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken, logout, changePassword};

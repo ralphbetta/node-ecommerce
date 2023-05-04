@@ -1,6 +1,8 @@
-//mdbgum -short cut
+//!mdbgum -short cut
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { response } = require('express');
+const crypto = require('crypto');
 
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
@@ -28,26 +30,32 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    role:{
-        type:String,
+    role: {
+        type: String,
         default: "user"
     },
-    cart:{
+    cart: {
         type: Array,
         default: []
     },
-    isBlocked:{
+    isBlocked: {
         type: Boolean,
         default: false,
     },
-    address:{type: mongoose.Schema.Types.ObjectId, ref: "Address"},
-    wishList:{type: mongoose.Schema.Types.ObjectId, ref: "Product "},
-    refreshToken: {type: String},
-    date: {
-        type: Date,
-        default: Date.now,
-      },
-});
+    address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
+    wishList: { type: mongoose.Schema.Types.ObjectId, ref: "Product " },
+    refreshToken: { type: String },
+    passwordChangedAt: {
+
+        type:  Date,
+        default: Date.now
+    },
+    passwordResetToken: String,
+    passwordResetExpires:  {type:  Date},
+},
+
+    { timestamps: true }
+);
 
 
 // Hash the password before saving the user
@@ -58,9 +66,16 @@ userSchema.pre('save', async function (next) {
 });
 
 
-userSchema.methods.isPasswordMatched = async (enteredPassword) => {
+userSchema.methods.isPasswordMatched = function(password) {
+    return bcrypt.compareSync(password, this.password);
+  };
+  
 
-    // return await bcrypt.compare(enteredPassword, this.password);
+userSchema.methods.createPasswordResetToken = async () => {
+    const resettoken = crypto.randomBytes(32).toString('hex');
+    this.passwordResetToken = crypto.createHash("sha256").update(resettoken).digest("hex");
+    this.passwordResetExpires = Date.now() + 30 * 60 * 1000; //10 minutes
+    return resettoken;
 }
 
 //Export the model
