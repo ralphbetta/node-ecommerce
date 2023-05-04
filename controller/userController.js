@@ -69,7 +69,6 @@ const loginUser = async (req, res) => {
     
 }
 
-
 const handleRefreshToken = async (req, res) => {
     const cookies = req.cookies;
     if(cookies.refreshToken){
@@ -207,6 +206,7 @@ const deleteProfile = (req, res) => {
 
 const updateProfile = (req, res) => {
     const id = req.userData.id;
+    console.log(req.body);
     User.findByIdAndUpdate(id, req.body, { new: true }).then((user) => {
         if (user) {
             return res.json({ data: user, success: true });
@@ -216,6 +216,26 @@ const updateProfile = (req, res) => {
     }).catch((err) => {
         console.error(err);
         return res.status(404).send('User not found');
+    });
+};
+
+
+const changePassword = (req, res) => {
+    const id = req.userData.id;
+    validateMongoDbId(id);
+    User.findById(id).then((user)=>{
+
+        user.createPasswordResetToken().then((token)=>{
+            user.password = req.body.password;
+            user.save().then((response)=>{
+                console.log(response);
+            });
+            return res.status(401).json({ data: "password changed unsucesfully", success: true, data: user});
+        });
+
+    }).catch((err) => {
+        console.error(err);
+        return res.status(500).send('Server error');
     });
 };
 
@@ -248,4 +268,4 @@ const logout =(req, res)=>{
     }
 } 
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken, logout };
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken, logout, changePassword};
