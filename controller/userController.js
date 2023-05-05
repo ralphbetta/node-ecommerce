@@ -1,10 +1,13 @@
+const { token } = require('morgan');
 const { generateToken } = require('../middleware/jwtToken');
 const generateRefreshToken = require('../middleware/refreshTokken');
 const validateMongoDbId = require('../utils/validateMongoDBId');
 const User = require('./../model/userModel');
+const sendMail = require('./emailController');
 // const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 
 const createUser = async (req, res) => {
@@ -66,29 +69,29 @@ const loginUser = async (req, res) => {
     }).catch((error) => {
         res.json({ message: 'Server error' })
     })
-    
+
 }
 
 const handleRefreshToken = async (req, res) => {
     const cookies = req.cookies;
-    if(cookies.refreshToken){
+    if (cookies.refreshToken) {
         const refreshedToken = cookies.refreshToken;
-        User.findOne({refreshToken: refreshedToken}).then((user)=>{
+        User.findOne({ refreshToken: refreshedToken }).then((user) => {
             const userData = { email: user.email, name: user.name, id: user._id, role: user.role };
-            jwt.verify(refreshedToken, process.env.JWT_SECRETE, (err, decoded)=>{
-                if(err || user._id.toString() !== decoded.userdata.id){
-                console.log(decoded);
-                console.log(userData.id);
-                  res.status(404).json("There's something wrong with the refresh token");
-                }else{
+            jwt.verify(refreshedToken, process.env.JWT_SECRETE, (err, decoded) => {
+                if (err || user._id.toString() !== decoded.userdata.id) {
+                    console.log(decoded);
+                    console.log(userData.id);
+                    res.status(404).json("There's something wrong with the refresh token");
+                } else {
                     const accessToken = generateToken(userData);
-                    res.status(200).json({accessToken});
+                    res.status(200).json({ accessToken });
                 }
             });
-        }).catch((err)=>{
+        }).catch((err) => {
             res.status(404).json("No user with this refresh token");
         });
-    }else{
+    } else {
         throw new Error("No refresh token in cookies");
     }
 }
@@ -105,6 +108,7 @@ const getAllUsers = (req, res) => {
 
 
 const getUser = (req, res) => {
+
     const id = req.params.id;
 
     User.findById(id).then((user) => {
@@ -220,19 +224,58 @@ const updateProfile = (req, res) => {
 };
 
 
-const changePassword = (req, res) => {
-    const id = req.userData.id;
-    validateMongoDbId(id);
-    User.findById(id).then((user)=>{
+const forgetPassword = async (req, res) => {
+    const email = req.body.email;
 
-        user.createPasswordResetToken().then((token)=>{
-            user.password = req.body.password;
-            user.save().then((response)=>{
-                console.log(response);
-            });
-            return res.status(401).json({ data: "password changed unsucesfully", success: true});
+    User.findOne({ email }).then((user) => {
+
+        user.createPasswordResetToken().then((token) => {
+            user.save().then((res) => {});
+            
+            const link = `http://localhost:5000/${token}`;
+            const body = `Hi, Please follow this link to reset your password. this link will be valid till 10 minutes <a href='${link}'>Clickhere</a>`;
+            const mailOptions = {
+                from: 'info@bitminingoptions.com',
+                to: 'gxaviprank@gmail.com',  //req.body.email,
+                subject: 'Node Test Email',
+                html: body,
+            };
+
+            res.json(token);
+
+            // sendMail(mailOptions);
+
         });
 
+    });
+
+}
+
+
+const changePassword = (req, res) => {
+
+    const id = req.userData.id; // remove this
+    const password = req.body.password;
+    const token = req.params.token;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    validateMongoDbId(id);
+
+    User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() }
+    }).then((user) => {
+        if (!user) {
+
+            return res.status(401).json({ data: "Token Expired! Please try again", success: true });
+        }
+
+        user.password = password;
+        user.passwordResetToken = undefined,
+            user.passwordResetExpires = undefined,
+            user.save()
+
+        return res.status(200).json({ message: "password changed unsucesfully", success: true });
     }).catch((err) => {
         console.error(err);
         return res.status(500).send('Server error');
@@ -240,32 +283,33 @@ const changePassword = (req, res) => {
 };
 
 
-const logout =(req, res)=>{
+const logout = (req, res) => {
     const cookies = req.cookies;
-    
-    if(cookies.refreshToken){
+
+    if (cookies.refreshToken) {
         const refreshedToken = cookies.refreshToken;
-        User.findOneAndUpdate(refreshedToken, {refreshToken:""}).then((user)=>{
+        User.findOneAndUpdate(refreshedToken, { refreshToken: "" }).then((user) => {
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: true,
             });
 
             return res.status(204).json(
-               {message: "No user with this refresh token",
-                data: user
-            });
-       
-        }).catch((err)=>{
+                {
+                    message: "No user with this refresh token",
+                    data: user
+                });
+
+        }).catch((err) => {
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: true,
             });
             res.status(204).json("No user with this refresh token");
         });
-    }else{
+    } else {
         throw new Error("No refresh token in cookies");
     }
-} 
+}
 
-module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken, logout, changePassword};
+module.exports = { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, getProfile, deleteProfile, updateProfile, handleRefreshToken, logout, changePassword, forgetPassword };

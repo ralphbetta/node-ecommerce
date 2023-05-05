@@ -42,6 +42,9 @@ var userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    passwordResetToken: {
+        type: String,
+    },
     address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
     wishList: { type: mongoose.Schema.Types.ObjectId, ref: "Product " },
     refreshToken: { type: String },
@@ -50,7 +53,6 @@ var userSchema = new mongoose.Schema({
         type:  Date,
         default: Date.now
     },
-    passwordResetToken: String,
     passwordResetExpires:  {type:  Date},
 },
 
@@ -71,7 +73,7 @@ userSchema.methods.isPasswordMatched = function(password) {
   };
   
 
-userSchema.methods.createPasswordResetToken = async () => {
+userSchema.methods.createPasswordResetToken = async function () {
     const resettoken = crypto.randomBytes(32).toString('hex');
     this.passwordResetToken = crypto.createHash("sha256").update(resettoken).digest("hex");
     this.passwordResetExpires = Date.now() + 30 * 60 * 1000; //10 minutes
