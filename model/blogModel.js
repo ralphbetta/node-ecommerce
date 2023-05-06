@@ -5,6 +5,7 @@ var blogSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
+        unique:true
     },
     description: {
         type: String,
@@ -41,23 +42,23 @@ var blogSchema = new mongoose.Schema({
     ],
     image: {
         type: String,
-        default: "",
+        default: "path/image1.png",
     },
     author: {
         type: String,
         default: "Admin",
     },
 
-    toJSON: {
-        virtuals: true
-    },
+    // toJSON: {
+    //     virtuals: true
+    // },
 
-    toObjects: {
-        virtuals: true
-    },
-
-    timestamps: true,
-});
+    // toObjects: {
+    //     virtuals: true
+    // },
+},
+{ timestamps: true,}
+);
 
 //Export the model
 module.exports = mongoose.model('Blog', blogSchema);
