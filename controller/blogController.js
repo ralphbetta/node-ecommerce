@@ -21,36 +21,68 @@ const createBlog = async (req, res) => {
 }
 
 const updateBlog = async (req, res) => {
-    //console.log(req.body)
+    const id = req.params.id;
+
+    Blog.findByIdAndUpdate(id, req.body, {new: true}).then((blog) => {
+        return res.status(200).json({ message: "Updated Succesfuly", data: blog });
+    }).catch((error) => {
+        return res.status(409).json({ message: "Post does not exist" });
+    });
+
 }
 
 const getBlog = async (req, res) => {
     const id = req.params.id;
 
-    Blog.findById(id).then((blog)=>{
-        if (!blog) {
-            return res.status(409).json({ message: "Post does not exist" });
-        }
+    Blog.findById(id).then((blog) => {
+
+        blog.numViews = blog.numViews + 1;
+        blog.save();
         return res.status(200).json({ message: "Succesfuly", data: blog });
     }).catch((error) => {
-        return res.status(500).json({ message: "Server Error", data: error });
-    });;
-}
-
-const getAllBlog = async (req, res) => {
-    Blog.find().then((response) => {
-       if(response){
-        return res.status(200).json({ message: "Succesfuly", data: response });
-       }else{
-        return res.status(404).json({ message: "Not Found", data: {} });
-       }
-    }).catch((error) => {
-        return res.status(500).json({ message: "Server Error", data: error });
+        return res.status(409).json({ message: "Post does not exist" });
     });
 }
 
-const deleteBlog = async (req, res) => {
 
+const getBlogAlt = async (req, res) => {
+    const id = req.params.id;
+    Blog.findByIdAndUpdate(
+        id,
+        {
+            $inc: { numViews: 1 },
+        },
+        { new: true }
+    ).then((blog) => {
+        return res.status(200).json({ message: "Succesfuly", data: blog });
+
+    }).catch((error) => {
+        return res.status(409).json({ message: "Post does not exist" });
+    });
+
+}
+
+const getAllBlog = async (req, res) => {
+
+    Blog.find().then((response) => {
+        if (response) {
+            return res.status(200).json({ message: "Succesfuly", data: response });
+        } else {
+            return res.status(404).json({ message: "Not Found", data: {} });
+        }
+    }).catch((error) => {
+        return res.status(500).json({ message: "Server Error", data: error });
+    });
+
+}
+
+const deleteBlog = async (req, res) => {
+    const id = req.params.id;
+    Blog.findByIdAndDelete(id).then((blog) => {
+        return res.status(200).json({ message: "Deleted Succesfuly" });
+    }).catch((error) => {
+        return res.status(409).json({ message: "Post does not exist" });
+    });
 }
 
 const isLiked = async (req, res) => {
