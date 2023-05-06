@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 4000;
 const authRouther = require('./routes/authRoute');
 const productRouther = require('./routes/productRoute');
 const blogRouuter = require("./routes/blogRoutes");
+const productCategoryRouuter = require("./routes/productCategoryRoute");
 
 const bodyParser = require('body-parser');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -26,6 +27,7 @@ app.use(cokieParser());
 
 app.use('/api/auth', authRouther);
 app.use('/api/product', productRouther);
+app.use('/api/product/category', productCategoryRouuter);
 app.use('/api/blog', blogRouuter);
 
 
