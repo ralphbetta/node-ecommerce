@@ -21,11 +21,20 @@ const createBlog = async (req, res) => {
 }
 
 const updateBlog = async (req, res) => {
-    console.log(req.body)
+    //console.log(req.body)
 }
 
 const getBlog = async (req, res) => {
+    const id = req.params.id;
 
+    Blog.findById(id).then((blog)=>{
+        if (!blog) {
+            return res.status(409).json({ message: "Post does not exist" });
+        }
+        return res.status(200).json({ message: "Succesfuly", data: blog });
+    }).catch((error) => {
+        return res.status(500).json({ message: "Server Error", data: error });
+    });;
 }
 
 const getAllBlog = async (req, res) => {
