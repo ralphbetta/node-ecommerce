@@ -25,11 +25,13 @@ app.use(morgan('dev'));
 app.use(cokieParser());
 //---------------------------------------------------
 
+
+
+
 app.use('/api/auth', authRouther);
 app.use('/api/product', productRouther);
 app.use('/api/product/category', productCategoryRouuter);
 app.use('/api/blog', blogRouuter);
-
 
 
 

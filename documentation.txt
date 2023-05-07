@@ -4,3 +4,18 @@ start
 >> touch index.js
 >> npm i express mongoose bcrypt body-parser dotenv
 >> npm i morgan -- allows monitioring of request and response time and information
+
+
+Winston is a popular logging library for Node.js, and it offers several advantages:
+
+Flexible and customizable: Winston provides a lot of options for configuring the logging output and format. You can customize everything from the log level to the log format to the log destination (e.g. file, console, remote server).
+
+Multiple transport options: Winston supports a variety of transport options, including file, console, and remote server. This allows you to choose the best option for your use case and easily switch between transports if needed.
+
+Scalable: Winston is designed to be scalable and performant, which is important when dealing with large-scale systems or high-traffic applications. It uses a transport-based architecture to ensure that logging doesn't slow down your application.
+
+Rich logging features: Winston provides a variety of logging features, such as log levels, timestamps, and metadata. This allows you to log important information about your application, which can be helpful when debugging or troubleshooting issues.
+
+Active development: Winston is actively developed and maintained, which means that it's well-supported and kept up-to-date with the latest Node.js releases. This ensures that you can rely on Winston for your logging needs and that it will continue to work well with your application over time.
+
+Overall, Winston is a solid choice for logging in Node.js applications, and its flexibility and scalability make it a good option for a wide range of use cases.
