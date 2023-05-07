@@ -1,16 +1,16 @@
 const express = require('express');
 const { verifyToken, isAdmin } = require('../middleware/jwtToken');
 const { createBlog } = require('../controller/blogController');
-const { getAllProductCategory, getProductCategory, updateProductCategory, deleteProductCategory } = require('../controller/productCategoryController');
+const { getAllBlogCategory, getBlogCategory, updateBlogCategory, deleteBlogCategory } = require('../controller/blogCategoryController');
 
 router = express.Router();
 
 
 router.post('/', verifyToken, createBlog);
-router.get('/', verifyToken, getAllProductCategory);
-router.get('/:id', verifyToken, getProductCategory);
-router.put('/:id', verifyToken, updateProductCategory);
-router.delete('/:id', verifyToken, deleteProductCategory);
+router.get('/', verifyToken, getAllBlogCategory);
+router.get('/:id', verifyToken, getBlogCategory);
+router.put('/:id', verifyToken, updateBlogCategory);
+router.delete('/:id', verifyToken, deleteBlogCategory);
 
 
 module.exports = router;

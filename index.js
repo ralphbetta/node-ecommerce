@@ -7,6 +7,8 @@ const authRouther = require('./routes/authRoute');
 const productRouther = require('./routes/productRoute');
 const blogRouuter = require("./routes/blogRoutes");
 const productCategoryRouuter = require("./routes/productCategoryRoute");
+const blogCategoryRouter = require("./routes/blogCategoryRoutes");
+
 
 const bodyParser = require('body-parser');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -32,6 +34,7 @@ app.use('/api/auth', authRouther);
 app.use('/api/product', productRouther);
 app.use('/api/product/category', productCategoryRouuter);
 app.use('/api/blog', blogRouuter);
+app.use('/api/blog', blogCategoryRouter);
 
 
 
