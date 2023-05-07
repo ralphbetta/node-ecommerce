@@ -51,7 +51,12 @@ const getAllProductCategory = async (req, res) => {
 }
 
 const deleteProductCategory = async (req, res) => {
-
+    const id = req.params.id;
+    ProductCategory.findByIdAndDelete(id).then((response) => {
+        res.status(200).json({ message: "Deleted Succesfuly", data: {} });
+    }).catch((error) => {
+        res.status(500).json({ message: "Server Error", data: error });
+    });
 }
 
 module.exports = {
