@@ -127,34 +127,84 @@ const addToWishList = async (req, res) => {
     const userID = req.userData.id;
     const prodID = req.body.productId;
 
-    User.findById(userID).then((user)=>{
+    User.findById(userID).then((user) => {
 
-//   const hasWish =  user.wishList.find((id)=> id.toString == prodID);
+        //   const hasWish =  user.wishList.find((id)=> id.toString == prodID);
 
-      const hasWish =  user.wishList.includes(prodID);
+        const hasWish = user.wishList.includes(prodID);
 
-     if(hasWish){
-        User.findByIdAndUpdate(userID, {
-            $pull: {
-             "wishList":prodID
-            }
-         }, {new: true}).then((response)=>{
-            return res.status(200).json({ message: "removed from wishlist", data: response });
-         });
-     }else{
-        User.findByIdAndUpdate(userID, {
-            $push: {
-             "wishList":prodID
-            }
-         }, {new: true}).then((response)=>{
-            return res.status(200).json({ message: "added to wishlist", data: response });
-         });
-     }
-    
+        if (hasWish) {
+            User.findByIdAndUpdate(userID, {
+                $pull: {
+                    "wishList": prodID
+                }
+            }, { new: true }).then((response) => {
+                return res.status(200).json({ message: "removed from wishlist", data: response });
+            });
+        } else {
+            User.findByIdAndUpdate(userID, {
+                $push: {
+                    "wishList": prodID
+                }
+            }, { new: true }).then((response) => {
+                return res.status(200).json({ message: "added to wishlist", data: response });
+            });
+        }
+
     }).catch((error) => {
         res.status(500).json({ message: "Server Error", data: error });
     });
 }
 
 
-module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct, addToWishList };
+const rating = async (req, res) => {
+    const userID = req.userData.id;
+    const prodID = req.body.productId;
+    const star = req.body.star;
+    Product.findById(prodID).then((product) => {
+        let ratted =  product.rating.find((each) => each.postedBy.toString() === userID.toString());
+
+        if (ratted === undefined) {
+            // User has not rated the product
+            Product.findByIdAndUpdate(prodID,
+                {
+                    $push: {
+                        rating: {
+                            star: star,
+                            postedBy: userID
+                        }
+                    }
+                },
+                { new: true }
+            ).then((response) => {
+                return res.status(200).json({ message: "ratings", data: response });
+            })
+
+        } else {
+            // User has rated the product
+
+            const filter = {
+                _id: prodID,
+                "rating.postedBy": userID
+              };
+              
+              const update = {
+                $set: { "rating.$.star": star }
+              };
+              
+              const options = { new: true }; // to return the updated document
+              
+              Product.findOneAndUpdate(filter, update, options).then((ans)=>{
+                return res.status(200).json({ message: "updated ratings", data: ans });
+              });
+
+        }
+
+    });
+
+
+}
+
+
+
+module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct, addToWishList, rating };
