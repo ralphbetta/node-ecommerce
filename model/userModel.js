@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const { response } = require('express');
 const crypto = require('crypto');
+const Product = require('./productModel');
+
 
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
@@ -46,7 +48,7 @@ var userSchema = new mongoose.Schema({
         type: String,
     },
     address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
-    wishList: { type: mongoose.Schema.Types.ObjectId, ref: "Product " },
+    wishList: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product", default: []}],
     refreshToken: { type: String },
     passwordChangedAt: {
 

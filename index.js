@@ -31,8 +31,8 @@ app.use(cokieParser());
 
 
 app.use('/api/auth', authRouther);
+app.use('/api/product-cat', productCategoryRouuter);
 app.use('/api/product', productRouther);
-app.use('/api/product/category', productCategoryRouuter);
 app.use('/api/blog', blogRouuter);
 app.use('/api/blog', blogCategoryRouter);
 

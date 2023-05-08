@@ -1,4 +1,5 @@
 const Product = require('../model/productModel');
+const User = require('../model/userModel');
 const slugify = require('slugify');
 
 const createProduct = async (req, res) => {
@@ -120,8 +121,40 @@ const filterAllProduct = (req, res) => {
         return res.status(200).json({ message: "sucessful", data: query });
 
     });
+}
 
+const addToWishList = async (req, res) => {
+    const userID = req.userData.id;
+    const prodID = req.body.productId;
+
+    User.findById(userID).then((user)=>{
+
+//   const hasWish =  user.wishList.find((id)=> id.toString == prodID);
+
+      const hasWish =  user.wishList.includes(prodID);
+
+     if(hasWish){
+        User.findByIdAndUpdate(userID, {
+            $pull: {
+             "wishList":prodID
+            }
+         }, {new: true}).then((response)=>{
+            return res.status(200).json({ message: "removed from wishlist", data: response });
+         });
+     }else{
+        User.findByIdAndUpdate(userID, {
+            $push: {
+             "wishList":prodID
+            }
+         }, {new: true}).then((response)=>{
+            return res.status(200).json({ message: "added to wishlist", data: response });
+         });
+     }
+    
+    }).catch((error) => {
+        res.status(500).json({ message: "Server Error", data: error });
+    });
 }
 
 
-module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct };
+module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct, addToWishList };
