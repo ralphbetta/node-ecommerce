@@ -206,5 +206,17 @@ const rating = async (req, res) => {
 }
 
 
+const getAllRating =(req, res)=>{
+   
+    Product.findById(id).then((value)=>{
+
+        let totalRating = get
+
+    }).catch((error) => {
+        res.status(500).json({ message: "Server Error", data: error });
+    });
+}
+
+
 
 module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct, addToWishList, rating };

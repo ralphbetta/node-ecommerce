@@ -82,5 +82,9 @@ userSchema.methods.createPasswordResetToken = async function () {
     return resettoken;
 }
 
+userSchema.methods.countRating= async function () {
+
+}
+
 //Export the model
 module.exports = mongoose.model('User', userSchema);
