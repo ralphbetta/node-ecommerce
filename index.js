@@ -8,6 +8,7 @@ const productRouther = require('./routes/productRoute');
 const blogRouuter = require("./routes/blogRoutes");
 const productCategoryRouuter = require("./routes/productCategoryRoute");
 const blogCategoryRouter = require("./routes/blogCategoryRoutes");
+const couponRouter = require("./routes/couponRoute");
 
 
 const bodyParser = require('body-parser');
@@ -35,6 +36,7 @@ app.use('/api/product-cat', productCategoryRouuter);
 app.use('/api/product', productRouther);
 app.use('/api/blog', blogRouuter);
 app.use('/api/blog', blogCategoryRouter);
+app.use('/api/coupon', couponRouter);
 
 
 
