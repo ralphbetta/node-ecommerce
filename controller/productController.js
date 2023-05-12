@@ -210,13 +210,17 @@ const getAllRating =(req, res)=>{
    
     Product.findById(id).then((value)=>{
 
-        let totalRating = get
+        // let totalRating = get
 
     }).catch((error) => {
         res.status(500).json({ message: "Server Error", data: error });
     });
 }
 
+const uploadImages = (req, res)=>{
+    res.send(req.file);
+}
 
 
-module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct, addToWishList, rating };
+
+module.exports = { createProduct, getProduct, getAllProduct, editProduct, deleteProduct, filterAllProduct, addToWishList, rating, uploadImages };
